@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
+#include "time.h"
 
 /*
 TODO
@@ -12,10 +13,9 @@ TODO
 
 */
 char *initWord();
-char *readWordData();
 void initStage();
 FILE *openWordBankFile();
-char *processCSV(FILE *);
+char *processCSV();
 
 int main()
 {
@@ -25,17 +25,16 @@ int main()
 
 char *initWord()
 {
-    char **words = processCSV(openWordBankFile);
+    srand(time(0));
     int random = rand() % 1000;
-    printf("%d",random);
+    printf("%d\n",random);
+    char *randomWord = processCSV(random);
+    printf("random word is %s",randomWord);
 }
 
-char *readWordData()
+char *processCSV(int random)
 {
-}
-
-char *processCSV(FILE *words)
-{
+    FILE* words = openWordBankFile();
     char buff[2];
     int wordPos = 0;
     int charPos = 0;
@@ -61,8 +60,15 @@ char *processCSV(FILE *words)
         }
     }
     fclose(words);
-
-    return(wordArray);
+    
+    char randomWord[25];
+    for (int i = 0; i<sizeof wordArray[random];i++){
+        if (wordArray[random][i] != '\0'){
+        randomWord[i] = wordArray[random][i];
+        }
+    }
+    char *c = randomWord;
+    return(c);
 }
 
 FILE *openWordBankFile()
