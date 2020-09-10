@@ -14,14 +14,33 @@ TODO
 */
 char *initWord();
 void initStage();
+void drawHang(int currentState);
+void drawBlankWord();
 FILE *openWordBankFile();
 char *processCSV();
 
 int main()
 {
     initWord();
+    initStage();
     exit(0);
 }
+
+char HANG_STATES[7][10 * 9] = {
+	"             +         +----     +----     +----     +----     +----     +----     +----  ",
+	"             |         |         |   O     |   O     |   O     |   O     |   O     |   O  ",
+	"             |         |         |         |   +     | --+     | --+--   | --+--   | --+--",
+	"             |         |         |         |   |     |   |     |   |     |   |     |   |  ",
+	"             |         |         |         |         |         |         |  /      |  / \\ ",
+	"             |         |         |         |         |         |         |         |      ",
+	"/*****\\   /*****\\   /*****\\   /*****\\   /*****\\   /*****\\   /*****\\   /*****\\   /*****\\   "
+};
+
+void initStage()
+{
+    drawHang(3);
+}
+
 
 char *initWord()
 {
@@ -29,7 +48,14 @@ char *initWord()
     int random = rand() % 1000;
     printf("%d\n",random);
     char *randomWord = processCSV(random);
-    printf("random word is %s",randomWord);
+    printf("random word is %s\n",randomWord);
+}
+
+void drawHang(int currentState)
+{
+    for (int i = 0; i < 7; i++){
+        printf("%.10s\n", &HANG_STATES[i][currentState*10]);
+    }
 }
 
 char *processCSV(int random)
@@ -60,13 +86,20 @@ char *processCSV(int random)
         }
     }
     fclose(words);
-    
-    char randomWord[25];
+
+    int count = 1;
+    for (int i = 0; i<sizeof wordArray[random];i++){
+        if (wordArray[random][i] != '\0'){
+            count+= 1;
+        }
+    }
+    char randomWord[count];
     for (int i = 0; i<sizeof wordArray[random];i++){
         if (wordArray[random][i] != '\0'){
         randomWord[i] = wordArray[random][i];
         }
     }
+    randomWord[count-1] = '\0';
     char *c = randomWord;
     return(c);
 }
