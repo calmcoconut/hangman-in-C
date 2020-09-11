@@ -190,7 +190,7 @@ void processCSV(int random)
 
 FILE *openWordBankCSV()
 {
-    FILE *words = fopen("hangman/wordbank.csv", "r");
+    FILE *words = fopen("wordbank.csv", "r");
     if (!words)
     {
         puts("ERROR opening file");
