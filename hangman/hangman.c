@@ -4,51 +4,11 @@
 #include <time.h>
 #include <ctype.h>
 
-/*
-TODO
-1. word selection
-2. draw stage
-3. correct guess behavior
-4. incorrect guess behavior
-5. restart game
-
-*/
-char *initWord();
-char *initStage(char *word, char letters[]);
-void drawHang(int currentState);
-char *drawWord(char *randomWord, char *answer);
-void drawAvailableLetters(char letters[]);
-int makeGuess(char *randomWord, char *guessSaved, char currentGuess);
-void checkWinner(char *guessSaved);
-FILE *openWordBankFile();
-char *processCSV();
-
-static char available[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
-int main()
-{
-    char *randomWord = initWord();
-    char *guess = initStage(randomWord, available);
-
-    int hangState = 2;
-    while (hangState != 8)
-    {
-        printf("\nGuess a letter!\n");
-        char currentGuess;
-        scanf("%c",&currentGuess);
-        int result = makeGuess(randomWord,guess,currentGuess);
-        if (result){
-
-        }
-        else {
-            hangState += 1;
-        }
-            drawHang(hangState);
-            drawWord(randomWord, guess);
-            drawAvailableLetters(available);
-    }
-        exit(0);
-}
-
+char chosenWord[25];
+int chosenWordLength;
+char guessState[25];
+int hangState = 1;
+char available[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 char HANG_STATES[7][10 * 9] =
     {
         "             +         +----     +----     +----     +----     +----     +----     +----  ",
@@ -59,133 +19,157 @@ char HANG_STATES[7][10 * 9] =
         "             |         |         |         |         |         |         |         |      ",
         "/*****\\   /*****\\   /*****\\   /*****\\   /*****\\   /*****\\   /*****\\   /*****\\   /*****\\   "};
 
-char *initStage(char *word, char letters[])
+FILE *openWordBankCSV();
+void processCSV(int random);
+void selectWordFromCSV(char wordArray[][25], int random);
+void drawHang(int hangState);
+void drawWord();
+void drawAvailableLetters();
+void initStage();
+void makeGuess(char guess);
+void checkWinner();
+
+int main()
 {
-    drawHang(2);
-    char *blanks = "                                          ";
-    char *guess = drawWord(word, blanks);
-    drawAvailableLetters(letters);
-    return (guess);
+    initStage();
+    return (0);
 }
 
-int makeGuess(char *randomWord, char *guessSaved, char currentGuess)
+void initStage()
 {
-    int isAvailableToGuess = 0;
-    int isCorrectGuess = 0;
+    srand(time(0));
+    processCSV(rand() % 1005);
+    drawHang(hangState);
+    drawWord();
+    drawAvailableLetters();
 
-    for (int i = 0; i < 26; i++)
+    while (hangState < 8)
     {
-        if ((int)available[i] == toupper(currentGuess))
-        {
-            isAvailableToGuess = 1;
-        }
+        puts("Make a guess!");
+        char g;
+        scanf("%c%*c", &g);
+        makeGuess(g);
+        drawHang(hangState);
+        drawWord();
+        drawAvailableLetters();
+        checkWinner();
     }
-
-    if (isAvailableToGuess)
-    {
-        int correct[25];
-        int counter = 0;
-        while (*randomWord != '\0')
-        {
-            if ((int)*randomWord == tolower(currentGuess))
-            {
-                correct[counter] = 1;
-                isCorrectGuess = 1;
-            }
-            counter += 1;
-            randomWord += 1;
-        }
-
-        if (isCorrectGuess)
-        {
-            for (int i = 0; i < 25; i++)
-            {
-                if (correct[i] == 1)
-                {
-                    guessSaved += i;
-                    *guessSaved = toupper(correct[i]);
-                }
-            }
-            return(1);
-        }
-    }
-    return(0);
+    printf("The correct word was:\n%s \nThanks for playing\n", chosenWord);
 }
 
-void checkWinner(char *guessSaved){
+void checkWinner()
+{
     int isWinner = 1;
-    while(*guessSaved){
-        if (*guessSaved == ' '){
+    for (int i = 0; i < chosenWordLength; i++)
+    {
+        if (guessState[i] == ' ' || guessState[i] == '\0')
+        {
             isWinner = 0;
+            break;
         }
-        guessSaved +=1;
     }
-    if (isWinner){
-        printf("WINNER");
+    if (isWinner)
+    {
+        puts("You Win!");
         exit(0);
     }
 }
 
-void drawHang(int currentState)
+void makeGuess(char guess)
 {
-    for (int i = 0; i < 7; i++)
+    int isAvailable = 0;
+    for (int i = 0; i < 26; i++)
     {
-        printf("%.10s\n", &HANG_STATES[i][currentState * 10]);
+        if (toupper(guess) == available[i])
+        {
+            isAvailable = 1;
+            available[i] = ' ';
+            break;
+        }
+    }
+    if (isAvailable)
+    {
+        int isCorrectGuess = 0;
+        for (int i = 0; i < chosenWordLength; i++)
+        {
+            char *p = guessState;
+            if (chosenWord[i] == guess)
+            {
+                isCorrectGuess = 1;
+                p += i;
+                *p = guess;
+            }
+        }
+
+        if (!isCorrectGuess)
+        {
+            hangState += 1;
+        }
+    }
+}
+
+void drawWord()
+{
+    printf("\t\t");
+    for (int i = 0; i < chosenWordLength; i++)
+    {
+        char c = 32;
+        if(guessState[i] != '\0'){
+            c = guessState[i];
+        }
+        printf("%c ", toupper(c));
+    }
+    printf("\n\t\t");
+    for (int i = 0; i < chosenWordLength; i++)
+    {
+        printf("_ ");
+    }
+}
+
+void drawAvailableLetters()
+{
+    printf("\n");
+    for (int i = 0; i < 26; i++)
+    {
+        printf("%c ", available[i]);
     }
     puts("\n");
 }
 
-char *drawWord(char *randomWord, char *answer)
+void drawHang(int hangState)
 {
-    printf("\t\t");
-    int lengthArray = 0;
-    while (*randomWord != '\0')
+    printf("\n word has %d characters\n", chosenWordLength);
+    for (int i = 0; i < 7; i++)
     {
-        lengthArray += 1;
-        randomWord += 1;
+        printf("%.10s\n", &HANG_STATES[i][hangState * 10]);
     }
-
-    char *guess = malloc(lengthArray + 1 * sizeof(char));
-    for (int i = 0; i < lengthArray; i++)
-    {
-        printf("%c ", *answer);
-        guess[i] = " ";
-        answer += 1;
-    }
-    printf("\n\t\t");
-    for (int i = 0; i < lengthArray; i++)
-    {
-        printf("_ ");
-    }
-    return (guess);
+    puts("\n");
 }
 
-void drawAvailableLetters(char letters[])
+void selectWordFromCSV(char wordArray[][25], int random)
 {
-    printf("\n\n");
-    for (int i = 0; i < 26; i++)
+    char *p = wordArray[random];
+    int count = 1;
+    while (*p != '\0')
     {
-        printf("%c ", letters[i]);
+        count += 1;
+        p += 1;
+    }
+    chosenWordLength = count - 1;
+    for (int i = 0; i < count; i++)
+    {
+        chosenWord[i] = wordArray[random][i];
     }
 }
 
-char *initWord()
+void processCSV(int random)
 {
-    srand(time(0));
-    int random = rand() % 1000;
-    printf("%d\n", random);
-    char *randomWord = processCSV(random);
-    printf("random word is %s\n", randomWord);
-    return (randomWord);
-}
-
-char *processCSV(int random)
-{
-    FILE *words = openWordBankFile();
+    FILE *words = openWordBankCSV();
     char buff[2];
     int wordPos = 0;
     int charPos = 0;
     char wordArray[1200][25];
+
     while (fgets(buff, 2, words))
     {
         if (buff[0] == ',')
@@ -195,11 +179,7 @@ char *processCSV(int random)
         }
         else
         {
-            if (buff[0] == ' ')
-            {
-                continue;
-            }
-            else
+            if (buff[0] != ' ')
             {
                 wordArray[wordPos][charPos] = buff[0];
                 charPos += 1;
@@ -207,34 +187,15 @@ char *processCSV(int random)
         }
     }
     fclose(words);
-
-    int count = 1;
-    for (int i = 0; i < sizeof wordArray[random]; i++)
-    {
-        if (wordArray[random][i] != '\0')
-        {
-            count += 1;
-        }
-    }
-    char randomWord[count];
-    for (int i = 0; i < sizeof wordArray[random]; i++)
-    {
-        if (wordArray[random][i] != '\0')
-        {
-            randomWord[i] = wordArray[random][i];
-        }
-    }
-    randomWord[count - 1] = '\0';
-    char *c = randomWord;
-    return (c);
+    selectWordFromCSV(wordArray, random);
 }
 
-FILE *openWordBankFile()
+FILE *openWordBankCSV()
 {
-    FILE *words = fopen("hangman/wordbank.csv", "r");
+    FILE *words = fopen("wordbank.csv", "r");
     if (!words)
     {
-        puts("error opening file");
+        puts("ERROR opening file");
         exit(1);
     }
     return words;
