@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <ctype.h>
 
 char chosenWord[25];
@@ -36,7 +37,8 @@ int main()
 
 void initStage()
 {
-    processCSV(3);
+    srand(time(0));
+    processCSV(rand() % 1005);
     drawHang(hangState);
     drawWord();
     drawAvailableLetters();
@@ -156,7 +158,6 @@ void selectWordFromCSV(char wordArray[][25], int random)
     {
         chosenWord[i] = wordArray[random][i];
     }
-    printf("Chosen word is %s\nlength is %d\n", chosenWord, chosenWordLength);
 }
 
 void processCSV(int random)
