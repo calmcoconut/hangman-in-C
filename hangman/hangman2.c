@@ -41,28 +41,32 @@ void initStage()
     drawWord();
     drawAvailableLetters();
 
-    while (hangState < 8){
+    while (hangState < 8)
+    {
         puts("Make a guess!");
         char g;
-        scanf("%c", &g);
+        scanf("%c%*c", &g);
         makeGuess(g);
         drawHang(hangState);
         drawWord();
         drawAvailableLetters();
+        checkWinner();
     }
 }
 
 void checkWinner()
 {
     int isWinner = 1;
-    for (int i=0; i<chosenWordLength;i++)
+    for (int i = 0; i < chosenWordLength; i++)
     {
-        if (guessState[i]==' '){
+        if (guessState[i] == ' ' || guessState[i] == '\0')
+        {
             isWinner = 0;
             break;
         }
     }
-    if (isWinner){
+    if (isWinner)
+    {
         puts("You Win!");
         exit(0);
     }
@@ -77,20 +81,20 @@ void makeGuess(char guess)
         {
             isAvailable = 1;
             available[i] = ' ';
+            break;
         }
     }
     if (isAvailable)
     {
         int isCorrectGuess = 0;
-        char *p = guessState;
         for (int i = 0; i < chosenWordLength; i++)
         {
+            char *p = guessState;
             if (chosenWord[i] == guess)
             {
                 isCorrectGuess = 1;
                 p += i;
                 *p = guess;
-                *p = guessState;
             }
         }
 
@@ -112,6 +116,7 @@ void drawWord()
     {
         printf("%c ", toupper(guessState[i]));
     }
+    printf("\n\t\t");
     for (int i = 0; i < chosenWordLength; i++)
     {
         printf("_ ");
