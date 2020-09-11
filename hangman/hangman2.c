@@ -7,7 +7,7 @@
 char chosenWord[25];
 int chosenWordLength;
 char guessState[25];
-int hangState = 2;
+int hangState = 1;
 char available[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 char HANG_STATES[7][10 * 9] =
     {
@@ -54,6 +54,7 @@ void initStage()
         drawAvailableLetters();
         checkWinner();
     }
+    printf("The correct word was:\n%s \nThanks for playing\n", chosenWord);
 }
 
 void checkWinner()
@@ -105,10 +106,6 @@ void makeGuess(char guess)
             hangState += 1;
         }
     }
-    else
-    {
-        hangState += 1;
-    }
 }
 
 void drawWord()
@@ -116,7 +113,11 @@ void drawWord()
     printf("\t\t");
     for (int i = 0; i < chosenWordLength; i++)
     {
-        printf("%c ", toupper(guessState[i]));
+        char c = 32;
+        if(guessState[i] != '\0'){
+            c = guessState[i];
+        }
+        printf("%c ", toupper(c));
     }
     printf("\n\t\t");
     for (int i = 0; i < chosenWordLength; i++)
@@ -137,6 +138,7 @@ void drawAvailableLetters()
 
 void drawHang(int hangState)
 {
+    printf("\n word has %d characters", chosenWordLength);
     for (int i = 0; i < 7; i++)
     {
         printf("%.10s\n", &HANG_STATES[i][hangState * 10]);
